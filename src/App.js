@@ -713,14 +713,18 @@ export default function CAProfileParser() {
               </p>
               <p>
                 Documenter manuellement des centaines de champs est fastidieux et source d'erreurs. Cet outil automatise 
-                cette tâche en parsant le profil XML d'installation.
+                cette tâche en parsant le profil XML de configuration. Ce profile XML contient la définition complète des champs mais est très bruyant.
+                L'outil extrait uniquement les informations pertinentes pour générer des exports CSV et des schémas XML clairs.
               </p> <br />
 
-              <h3 className="text-xl font-bold text-indigo-600"> Architecture</h3>
-              <h4 className="text-lg font-semibold text-gray-800">Étape 1 : Acquisition</h4>
-              <p>L'utilisateur upload le fichier XML du profil d'installation exporté depuis Providence.</p><br />
+              <h3 className="text-xl font-bold text-indigo-600"> Processus</h3>
+              <h4 className="text-lg font-semibold text-gray-800">Étape 1 : Récupérer le profil de configuration dans Collective Access.</h4>
+              <p>L'utilisateur upload le fichier XML du profil de configuration exporté depuis Providence/CollectiveAccess (Manage → Administration → Maintenance → Exporter la configuration système).</p><br />
 
-              <h4 className="text-lg font-semibold text-gray-800">Étape 2 : Parsing Multi-Format</h4>
+              <h4 className="text-lg font-semibold text-gray-800">Étape 2 : Charger le document dans cette application</h4>
+              <p>L'utilisateur upload le fichier XML du profil de configuration exporté depuis Providence/CollectiveAccess.</p><br />
+
+              <h4 className="text-lg font-semibold text-gray-800">Étape 3 : Parsing </h4>
               <p>
                 CollectiveAccess a évolué et utilise plusieurs formats XML. L'outil parse 3 structures différentes :
               </p>
@@ -729,19 +733,21 @@ export default function CAProfileParser() {
                 <li><code>&lt;metadataElement&gt;</code> avec <code>&lt;restriction&gt;&lt;table&gt;</code> (format actuel)</li>
                 <li><code>&lt;typeRestriction type=""&gt;</code> (format alternatif)</li><br />
               </ul>
-
-              <h4 className="text-lg font-semibold text-gray-800">Étape 3 : Enrichissement</h4>
               <p>
                 Le XML ne contient que les champs personnalisés. L'outil ajoute automatiquement les 5 champs natifs 
                 de CollectiveAccess : <code>idno</code>, <code>preferred_labels</code>, <code>type_id</code>, 
                 <code>access</code>, <code>status</code>.
-              </p><br />
+              </p>
+              <p>L'application affiche les rubriques des différentes tables. </p>
+              <br />
+              <h4 className="text-lg font-semibold text-gray-800">Étape 4 : Téléchargement </h4>
+              <p>L'utilisateur peut télécharger les fichiers.
 
               <h3 className="text-xl font-bold text-indigo-600"> Deux Formats d'Export</h3>
               
               <h4 className="text-lg font-semibold text-gray-800">1. CSV Mapping pour CollectiveAccess</h4>
               <p>
-                Génère un fichier CSV importable dans Providence (Manage → Import/Export → Import Data Mappings) 
+                Génère un fichier CSV importable dans Providence/CollectiveAccess (Manage → Export → Import Data Mappings) 
                 pour configurer un export de données. Le format respecte les 9 colonnes requises avec :
               </p>
               <ul>
@@ -764,11 +770,11 @@ export default function CAProfileParser() {
 
               <h3 className="text-xl font-bold text-indigo-600"> Utilisation</h3>
               <ol>
-                <li>Dans Providence : Manage → Administration → Maintenance → Download installation profile</li>
+                <li>Dans Providence/CollectiveAccess : Manage → Administration → Maintenance → Exporter la configuration système</li>
                 <li>Uploadez le fichier XML dans cet outil</li>
                 <li>Sélectionnez une table</li>
                 <li>Exportez le mapping CSV ou le schéma XML selon vos besoins</li>
-                <li>Importez le mapping CSV dans Providence pour configurer votre export</li>
+                <li>Importez le mapping CSV dans Providence/CollectiveAccess pour configurer votre export</li>
               </ol>
 
               <div className="mt-6 p-4 bg-blue-50 border-l-4 border-blue-400 rounded">
