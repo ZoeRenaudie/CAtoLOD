@@ -1,6 +1,23 @@
+Cette application a été développée en React par Zoë Renaudie (avec le soutien de Claude.ai) dans le cadre du projet Forward linking. Elle permet de parser le profil de configuration exporté depuis Providence/CollectiveAccess afin d'en extraire les mappings de chaque table au format CSV ou XML.
+
+Fonctionne avec le schéma d'export de CollectiveAccess dont la hierarchie comporte : 
+- profile
+    - locales
+    - lists
+    - elementSets
+    - userinterfaces 
+    - relationshipTypes
+    - roles
+    - groups
+    - displays
+    - searchForms. 
+
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Documentation : https://react.dev/blog/2023/03/16/introducing-react-dev
 
 ## Available Scripts
 
