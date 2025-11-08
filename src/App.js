@@ -513,7 +513,7 @@ export default function CAProfileParser() {
               <div className="text-sm text-blue-800">
                 <p className="font-semibold mb-1">Comment utiliser :</p>
                 <ol className="list-decimal ml-4 space-y-1">
-                  <li>Uploadez votre fichier XML du profil d'installation</li>
+                  <li>Uploadez votre fichier XML du profil de configuration ("configuration système" de Providence)</li>
                   <li>Les noms des rubriques deviennent les noms des colonnes CSV</li>
                   <li>Exportez les tables en CSV avec tous les champs réels</li>
                 </ol>
@@ -721,7 +721,7 @@ export default function CAProfileParser() {
               <h4 className="text-lg font-semibold text-gray-800">Étape 1 : Récupérer le profil de configuration dans Collective Access.</h4>
               <p>L'utilisateur upload le fichier XML du profil de configuration exporté depuis Providence/CollectiveAccess (Manage → Administration → Maintenance → Exporter la configuration système).</p><br />
 
-              <h4 className="text-lg font-semibold text-gray-800">Étape 2 : Charger le document dans cette application</h4>
+              <h4 className="text-lg font-semibold text-gray-800">Étape 2 : Charger le document</h4>
               <p>L'utilisateur upload le fichier XML du profil de configuration exporté depuis Providence/CollectiveAccess.</p><br />
 
               <h4 className="text-lg font-semibold text-gray-800">Étape 3 : Parsing </h4>
