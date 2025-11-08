@@ -741,7 +741,7 @@ export default function CAProfileParser() {
               <p>L'application affiche les rubriques des différentes tables. </p>
               <br />
               <h4 className="text-lg font-semibold text-gray-800">Étape 4 : Téléchargement </h4>
-              <p>L'utilisateur peut télécharger les fichiers.
+              <p>L'utilisateur peut télécharger les fichiers.</p><br />
 
               <h3 className="text-xl font-bold text-indigo-600"> Deux Formats d'Export</h3>
               
