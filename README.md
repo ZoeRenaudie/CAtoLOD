@@ -13,10 +13,11 @@ Fonctionne avec le schéma d'export des configuration de CollectiveAccess dont l
     - searchForms. 
 
 @todo : Ajouter les infos suivantes : 
-- donner la procedure entière
+- donner la procedure entière pour exporter données de CA
 - L'export en csv doit être un .xslx pour être upload dans providence.
 - L'export se fera en xml. Pour pouvoir exporter en csv ou MARC seulement changer la cse dans les settings dans le csv.
-- partager à la communauté collective access pour double check que tout est bon. 
+- partager à la communauté collective access pour double check que tout est bon.
+- explorer DRY dans REACT pour les settings d'export dans le code https://javascript.plainenglish.io/dont-repeat-yourself-principle-in-react-8ce4ed251967
 
 # Getting Started with Create React App
 
