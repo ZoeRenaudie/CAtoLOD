@@ -486,6 +486,202 @@ export default function CAProfileParser() {
     }, parsedData.tables.length * 300 + 500);
   };
 
+  // Ajout fonction pour exporter TOUTES les tables dans UN SEUL fichier CSV
+  // @todo : Trouver un moyen d'enlever la repetition de mise en forme des champs
+    const exportAllTablesInOneCSV = () => {
+    if (!parsedData || !parsedData.tables) {
+      alert('Aucune donnée à exporter');
+      return;
+    }
+
+    const rows = [];
+    
+    // En-tête
+    rows.push([
+      'Rule type',
+      'ID', 
+      'Parent ID',
+      'Element',
+      'Source',
+      'Options',
+      'Notes',
+      'Original values',
+      'Replacement values'
+    ]);
+
+    let currentId = 1;
+
+    // Créer un élément racine pour tout le document
+    rows.push([
+      'Mapping',
+      currentId.toString(),
+      '',
+      'record',
+      '',
+      '',
+      'Root element for XML export',
+      '',
+      ''
+    ]);
+    const rootId = currentId;
+    currentId++;
+
+    // Pour chaque table, créer une hiérarchie à 3 niveaux
+    parsedData.tables.forEach(table => {
+      const fields = parsedData.metadataByTable[table] || [];
+      
+      // Élément table (enfant du root)
+      rows.push([
+        'Mapping',
+        currentId.toString(),
+        rootId.toString(), // Parent = root
+        table,
+        '',
+        '',
+        `Table ${table}`,
+        '',
+        ''
+      ]);
+      const tableId = currentId;
+      currentId++;
+
+      // Tous les champs de cette table (enfants de la table)
+      fields.forEach(field => {
+        rows.push([
+          'Mapping',
+          currentId.toString(),
+          tableId.toString(), //  Parent = table
+          field.code,
+          `${table}.${field.code}`,
+          '',
+          `${field.label}${field.description ? ' - ' + field.description : ''}`,
+          '',
+          ''
+        ]);
+        currentId++;
+      });
+    });
+
+    // Lignes vides
+    for (let i = 0; i < 3; i++) {
+      rows.push(['', '', '', '', '', '', '', '', '']);
+    }
+
+    // Settings
+    rows.push(['', 'Setting', 'Setting Value', 'Description', 'Notes', '', '', '', '']);
+    
+    rows.push([
+      'Setting',
+      'code',
+      'export_all_tables', //  Code spécifique pour export global
+      'Alphanumeric code of the mapping',
+      'All tables combined', //  Note indiquant l'export global
+      '', '', '', ''
+    ]);
+
+    rows.push([
+      'Setting',
+      'name',
+      'Export All Tables', //  Nom descriptif
+      'Human readable name of the mapping',
+      'Arbitrary text',
+      '', '', '', ''
+    ]);
+
+    rows.push([
+      'Setting',
+      'table',
+      'ca_objects',
+      'Sets the table for the exported data',
+      'Primary table',
+      '', '', '', ''
+    ]);
+
+    rows.push([
+      'Setting',
+      'exporter_format',
+      'XML',
+      'Set exporter type',
+      'XML, CSV or MARC',
+      '', '', '', ''
+    ]);
+
+    const csvContent = rows.map(row => 
+      row.map(cell => {
+        const escaped = String(cell).replace(/"/g, '""');
+        return `"${escaped}"`;
+      }).join(',')
+    ).join('\n');
+
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'Data_Export_Mapping_ALL_TABLES.csv'); //  Nom de fichier spécifique
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    // Calculer le total de champs pour le message de confirmation
+    const totalFields = parsedData.tables.reduce((sum, t) => 
+      sum + (parsedData.metadataByTable[t]?.length || 0), 0);
+    alert(`Mapping global généré avec ${parsedData.tables.length} tables et ${totalFields} champs !`);
+  };
+
+  // Fonction pour exporter TOUTES les tables dans UN SEUL fichier XML
+  const exportAllTablesInOneXML = () => {
+    if (!parsedData || !parsedData.tables) {
+      alert('Aucune donnée à exporter');
+      return;
+    }
+
+    let xmlContent = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xmlContent += '<schemas>\n'; // Élément racine contenant tous les schémas
+    
+    // Boucle sur toutes les tables pour créer un schéma complet
+    parsedData.tables.forEach(table => {
+      const fields = parsedData.metadataByTable[table] || [];
+      
+      xmlContent += `  <schema table="${table}">\n`;
+      xmlContent += `    <fields>\n`;
+      
+      fields.forEach(field => {
+        xmlContent += `      <field>\n`;
+        xmlContent += `        <code>${field.code}</code>\n`;
+        xmlContent += `        <label>${field.label.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</label>\n`;
+        xmlContent += `        <datatype>${field.datatype}</datatype>\n`;
+        if (field.description) {
+          xmlContent += `        <description>${field.description.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</description>\n`;
+        }
+        xmlContent += `        <source>${table}.${field.code}</source>\n`;
+        xmlContent += `      </field>\n`;
+      });
+      
+      xmlContent += `    </fields>\n`;
+      xmlContent += `  </schema>\n`;
+    });
+    
+    xmlContent += '</schemas>'; // Fermeture de l'élément racine
+
+    const blob = new Blob([xmlContent], { type: 'application/xml;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'schema_ALL_TABLES.xml'); //  Nom de fichier spécifique
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    // Calculer le total de champs pour le message de confirmation
+    const totalFields = parsedData.tables.reduce((sum, t) => 
+      sum + (parsedData.metadataByTable[t]?.length || 0), 0);
+    alert(`Schéma XML global généré avec ${parsedData.tables.length} tables et ${totalFields} champs !`);
+  };
+
   // Interface utilisateur
     return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
@@ -576,6 +772,7 @@ export default function CAProfileParser() {
                   <div className="text-green-100">Listes</div>
                 </div>
               </div>
+              
 
               {/* Sélecteur de table */}
               <div className="bg-gray-50 rounded-lg p-6">
@@ -599,46 +796,68 @@ export default function CAProfileParser() {
               <div className="flex flex-col gap-4">
                 <div className="bg-gray-50 rounded-lg p-4">
                   <h3 className="text-sm font-semibold text-gray-700 mb-3">Export pour CollectiveAccess (Mapping)</h3>
-                  <div className="flex gap-4 justify-center">
-                    <button
-                      onClick={() => exportTableToCSV(selectedTable)}
-                      className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg"
-                    >
-                      <Download className="w-5 h-5" />
-                      Mapping CSV {selectedTable}
-                    </button>
-                    <button
-                      onClick={exportAllTables}
-                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg"
-                    >
-                      <Download className="w-5 h-5" />
-                      Tous les mappings CSV
-                    </button>
+                  <div className="flex flex-col gap-3">
+                    <div className="flex gap-4 justify-center">
+                      <button
+                        onClick={() => exportTableToCSV(selectedTable)}
+                        className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg"
+                      >
+                        <Download className="w-5 h-5" />
+                        Mapping CSV {selectedTable}
+                      </button>
+                      <button
+                        onClick={exportAllTables}
+                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg"
+                      >
+                        <Download className="w-5 h-5" />
+                        Tous les mappings CSV (tables séparées)
+                      </button>
+                    </div>
+                    <div className="flex justify-center">
+                      <button
+                        onClick={exportAllTablesInOneCSV}
+                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg"
+                      >
+                        <Download className="w-5 h-5" />
+                        Mapping CSV COMPLET (toutes tables en 1 fichier)
+                      </button>
+                    </div>
                   </div>
                 </div>
 
                 <div className="bg-purple-50 rounded-lg p-4">
                   <h3 className="text-sm font-semibold text-gray-700 mb-3">Export pour Ontologie (Schéma XML)</h3>
-                  <div className="flex gap-4 justify-center">
-                    <button
-                      onClick={() => exportSchemaToXML(selectedTable)}
-                      className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg"
-                    >
-                      <Download className="w-5 h-5" />
-                      Schéma XML {selectedTable}
-                    </button>
-                    <button
-                      onClick={exportAllSchemasToXML}
-                      className="flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg"
-                    >
-                      <Download className="w-5 h-5" />
-                      Tous les schémas XML
-                    </button>
+                  <div className="flex flex-col gap-3">
+                    <div className="flex gap-4 justify-center">
+                      <button
+                        onClick={() => exportSchemaToXML(selectedTable)}
+                        className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg"
+                      >
+                        <Download className="w-5 h-5" />
+                        Schéma XML {selectedTable}
+                      </button>
+                      <button
+                        onClick={exportAllSchemasToXML}
+                        className="flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg"
+                      >
+                        <Download className="w-5 h-5" />
+                        Tous les schémas XML (séparés)
+                      </button>
+                    </div>
+                    <div className="flex justify-center">
+                      <button
+                        onClick={exportAllTablesInOneXML}
+                        className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg"
+                      >
+                        <Download className="w-5 h-5" />
+                        Schéma XML COMPLET (toutes tables en 1 fichier)
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Aperçu des champs */}
+            {/* Aperçu des champs */}
               {parsedData.metadataByTable[selectedTable] && (
                 <div className="mt-8">
                   <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -731,7 +950,8 @@ export default function CAProfileParser() {
               <ul>
                 <li><code>&lt;elementSet&gt;</code> (ancien format)</li>
                 <li><code>&lt;metadataElement&gt;</code> avec <code>&lt;restriction&gt;&lt;table&gt;</code> (format actuel)</li>
-                <li><code>&lt;typeRestriction type=""&gt;</code> (format alternatif)</li><br />
+                <li><code>&lt;typeRestriction type=""&gt;</code> (format alternatif)</li>
+                <br />
               </ul>
               <p>
                 Le XML ne contient que les champs personnalisés. L'outil ajoute automatiquement les 5 champs natifs 
@@ -743,7 +963,7 @@ export default function CAProfileParser() {
               <h4 className="text-lg font-semibold text-gray-800">Étape 4 : Téléchargement </h4>
               <p>L'utilisateur peut télécharger les fichiers.</p><br />
 
-              <h3 className="text-xl font-bold text-indigo-600"> Deux Formats d'Export</h3>
+              <h3 className="text-xl font-bold text-indigo-600"> `Deux Formats d'Export` </h3>
               
               <h4 className="text-lg font-semibold text-gray-800">1. CSV Mapping pour CollectiveAccess</h4>
               <p>
@@ -755,7 +975,8 @@ export default function CAProfileParser() {
                 <li>Hiérarchie parent-enfant (tous les champs enfants du root)</li>
                 <li>Codes techniques dans la colonne Element</li>
                 <li>Labels lisibles dans la colonne Notes</li>
-              </ul><br />
+              </ul>
+              <br />
 
               <h4 className="text-lg font-semibold text-gray-800">2. Schéma XML pour Ontologie</h4>
               <p>
@@ -765,7 +986,8 @@ export default function CAProfileParser() {
               <ul>
                 <li>Mapping avec ontologies externes (CIDOC-CRM, Dublin Core)</li>
                 <li>Documentation technique</li>
-                <li>Analyse de correspondance avec vocabulaires contrôlés</li><br />
+                <li>Analyse de correspondance avec vocabulaires contrôlés</li>
+                <br />
               </ul>
 
               <h3 className="text-xl font-bold text-indigo-600"> Utilisation</h3>
@@ -775,6 +997,18 @@ export default function CAProfileParser() {
                 <li>Sélectionnez une table</li>
                 <li>Exportez le mapping CSV ou le schéma XML selon vos besoins</li>
                 <li>Importez le mapping CSV dans Providence/CollectiveAccess pour configurer votre export</li>
+              </ol>
+              <ol><p>Fonctionne avec le schéma d'export des configuration de CollectiveAccess dont la hierarchie comporte : </p>
+                <li>- profile</li>
+                <li>- locales</li>    
+                <li>- lists</li>
+                <li>- elementSets</li>
+                <li>- userinterfaces </li>
+                <li>- relationshipTypes</li>
+                <li>- roles</li>
+                <li>- groups</li>
+                <li>- displays</li>
+                <li>- searchForms.</li> 
               </ol>
 
               <div className="mt-6 p-4 bg-blue-50 border-l-4 border-blue-400 rounded">
