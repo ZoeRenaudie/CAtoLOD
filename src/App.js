@@ -6,7 +6,8 @@ export default function CAProfileParser() {
   const [parsedData, setParsedData] = useState(null);
   const [error, setError] = useState('');
   const [selectedTable, setSelectedTable] = useState('ca_objects');
-    const [showAbout, setShowAbout] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
+  const [exportFormat, setExportFormat] = useState('XML'); // format d'export sélectionné
 
 // Gestion de l'upload du fichier
   const handleFileUpload = (event) => {
@@ -308,12 +309,13 @@ export default function CAProfileParser() {
   };
 
   // Exporter une table en CSV pour mapping CollectiveAccess selon le template
-  const exportTableToCSV = (table) => {
+  const exportTableToCSV = (table, format = null) => { 
     if (!parsedData || !parsedData.metadataByTable[table]) {
       alert('Aucune donnée disponible pour cette table');
       return;
     }
 
+    const actualFormat = format || exportFormat; 
     const fields = parsedData.metadataByTable[table];
     const rows = [];
 
@@ -330,16 +332,34 @@ export default function CAProfileParser() {
       'Replacement values'
     ]);
 
+    rows.push([
+    'Mapping',
+    '1',              //  ID 1 = racine
+    '',               // Pas de parent (c'est le root)
+    'record',         // Nom de l'élément racine
+    '',               // Pas de source
+    '',
+    'Root element for export',
+    '',
+    ''
+  ]);
+
     // Ajouter chaque champ comme une ligne de mapping
+    // XML : utiliser le code (idno, preferred_labels) car XML n'accepte pas espaces/accents
+    // CSV : utiliser le label (Identifiant, Nom préféré) car CSV accepte tout texte
     fields.forEach((field, index) => {
+      const elementName = actualFormat === 'XML' 
+        ? field.code  //  XML = code technique
+        : field.label; // CSV = label lisible
+      
       rows.push([
         'Mapping',
-        (index + 1).toString(),
-        '',
-        field.label || field.code,
+        (index + 2).toString(),
+        '1',
+        elementName, // Conditionnel selon format
         `${table}.${field.code}`,
         '',
-        field.description || '',
+        `${field.label}${field.description ? ' - ' + field.description : ''}`,
         '',
         ''
       ]);
@@ -356,7 +376,7 @@ export default function CAProfileParser() {
     rows.push([
       'Setting',
       'code',
-      `export_${table.replace('ca_', '')}`,
+      `export_${table.replace('ca_', '')}_${actualFormat.toLowerCase()}`, 
       'Alphanumeric code of the mapping',
       'Arbitrary, no special characters or spaces',
       '', '', '', ''
@@ -365,7 +385,7 @@ export default function CAProfileParser() {
     rows.push([
       'Setting',
       'name',
-      `Export ${table}`,
+      `Export ${table} (${actualFormat})`,
       'Human readable name of the mapping',
       'Arbitrary text',
       '', '', '', ''
@@ -383,7 +403,7 @@ export default function CAProfileParser() {
     rows.push([
       'Setting',
       'exporter_format',
-      'CSV',
+      actualFormat,
       'Set exporter type',
       'XML, CSV or MARC',
       '', '', '', ''
@@ -418,12 +438,12 @@ export default function CAProfileParser() {
 
     parsedData.tables.forEach((table, index) => {
       setTimeout(() => {
-        exportTableToCSV(table);
+        exportTableToCSV(table, exportFormat); 
       }, index * 300);
     });
 
     setTimeout(() => {
-      alert(`${parsedData.tables.length} fichiers CSV générés !`);
+      alert(`${parsedData.tables.length} fichiers mapping ${exportFormat} générés !`);
     }, parsedData.tables.length * 300 + 500);
   };
 
@@ -776,6 +796,8 @@ export default function CAProfileParser() {
 
               {/* Sélecteur de table */}
               <div className="bg-gray-50 rounded-lg p-6">
+                <div className="grid grid-cols-2 gap-4"> {/* ✅ NOUVEAU : Grille 2 colonnes */}
+                <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-3">
                   Sélectionnez une table :
                 </label>
@@ -792,37 +814,60 @@ export default function CAProfileParser() {
                 </select>
               </div>
 
+              {/* Sélécteur */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  Format d'export des données :
+                </label>
+                <select
+                  value={exportFormat}
+                  onChange={(e) => setExportFormat(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                >
+                  <option value="XML">XML (recommandé)</option>
+                  <option value="CSV">CSV</option>
+                  <option value="MARC">MARC</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-2">
+                  Le mapping généré configurera CollectiveAccess pour exporter en <strong>{exportFormat}</strong>
+                </p>
+              </div>
+            </div>
+          </div>
+
               {/* Boutons d'export */}
               <div className="flex flex-col gap-4">
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-3">Export pour CollectiveAccess (Mapping)</h3>
-                  <div className="flex flex-col gap-3">
-                    <div className="flex gap-4 justify-center">
-                      <button
-                        onClick={() => exportTableToCSV(selectedTable)}
-                        className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg"
-                      >
-                        <Download className="w-5 h-5" />
-                        Mapping CSV {selectedTable}
-                      </button>
-                      <button
-                        onClick={exportAllTables}
-                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg"
-                      >
-                        <Download className="w-5 h-5" />
-                        Tous les mappings CSV (tables séparées)
-                      </button>
-                    </div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-3">
+                  Export pour CollectiveAccess (Mapping) - Format : <span className="text-indigo-600">{exportFormat}</span> 
+                </h3>
+                <div className="flex flex-col gap-3">
+                  <div className="flex gap-4 justify-center">
+                    <button
+                      onClick={() => exportTableToCSV(selectedTable)}
+                      className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg"
+                    >
+                      <Download className="w-5 h-5" />
+                      Mapping {exportFormat} - {selectedTable} 
+                    </button>
+                    <button
+                      onClick={exportAllTables}
+                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg"
+                    >
+                      <Download className="w-5 h-5" />
+                      Tous mappings {exportFormat} (séparés) 
+                    </button>
+                  </div>
                     <div className="flex justify-center">
                       <button
                         onClick={exportAllTablesInOneCSV}
                         className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg"
                       >
                         <Download className="w-5 h-5" />
-                        Mapping CSV COMPLET (toutes tables en 1 fichier)
+                        Mapping {exportFormat} COMPLET (toutes tables en 1 fichier)
                       </button>
                     </div>
-                  </div>
+                  </div> 
                 </div>
 
                 <div className="bg-purple-50 rounded-lg p-4">
