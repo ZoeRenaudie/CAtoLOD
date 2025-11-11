@@ -12,11 +12,12 @@ Fonctionne avec le schéma d'export des configuration de CollectiveAccess dont l
     - displays
     - searchForms.
  
-Warning : pas possible d'exporter toutes les tables en xml pour l'instant depuis collective access. 
+Warning 11.11.25 : pas possible d'exporter toutes les tables en xml pour l'instant depuis collective access. 
+exports elements ne sont plus bons. 
 
 @todo : Ajouter les infos suivantes : 
 - donner la procedure entière pour exporter données de CA
-- L'export en csv doit être un .xslx pour être upload dans providence.
+- L'export en csv doit être un .xslx pour être upload dans providence. si le titre dans settings est le meme, il remplacera l'ancien. 
 - L'export se fera en csv. Pour pouvoir exporter en xml ou MARC  changer la case dans les settings dans le csv et ajouter informations necessaire (root et parents pour xml)
 - partager à la communauté collective access pour double check que tout est bon.
 - explorer DRY dans REACT pour les settings d'export dans le code https://javascript.plainenglish.io/dont-repeat-yourself-principle-in-react-8ce4ed251967
