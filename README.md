@@ -10,14 +10,17 @@ Fonctionne avec le schéma d'export des configuration de CollectiveAccess dont l
     - roles
     - groups
     - displays
-    - searchForms. 
+    - searchForms.
+ 
+Warning : pas possible d'exporter toutes les tables en xml pour l'instant depuis collective access. 
 
 @todo : Ajouter les infos suivantes : 
 - donner la procedure entière pour exporter données de CA
 - L'export en csv doit être un .xslx pour être upload dans providence.
-- L'export se fera en xml. Pour pouvoir exporter en csv ou MARC seulement changer la cse dans les settings dans le csv.
+- L'export se fera en csv. Pour pouvoir exporter en xml ou MARC  changer la case dans les settings dans le csv et ajouter informations necessaire (root et parents pour xml)
 - partager à la communauté collective access pour double check que tout est bon.
 - explorer DRY dans REACT pour les settings d'export dans le code https://javascript.plainenglish.io/dont-repeat-yourself-principle-in-react-8ce4ed251967
+- dans a propos: profile au meme niveau que local
 
 # Getting Started with Create React App
 
