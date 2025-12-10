@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Upload, Download, FileText, Info, Grid, HelpCircle, X, Link } from 'lucide-react';
 
 export default function CAProfileParser() {
-  const [xmlContent, setXmlContent] = useState('');
   const [parsedData, setParsedData] = useState(null);
   const [error, setError] = useState('');
   const [selectedTable, setSelectedTable] = useState('ca_objects');
@@ -25,9 +24,6 @@ export default function CAProfileParser() {
       reader.onload = (e) => {
         // e.target.result contient le CONTENU TEXTE du fichier XML
         // Ex: "<?xml version="1.0"?><profile>...</profile>"
-
-        // Sauvegarder le contenu brut dans le state (optionnel, pour debug)
-        setXmlContent(e.target.result);
 
         // Appeler la fonction de parsing avec le texte XML
         parseXML(e.target.result);
