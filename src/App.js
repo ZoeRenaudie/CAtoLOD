@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+ import React, { useState } from 'react';
 import { Upload, Download, FileText, Info, Grid, HelpCircle, X, Link } from 'lucide-react';
 
 export default function CAProfileParser() {
@@ -735,7 +735,7 @@ export default function CAProfileParser() {
     rows.push([
       'Setting',
       'code',
-      'export_all_tables', //  Code spécifique pour export global
+     `export_all_tables_${exportFormat.toLowerCase()}`, //  Code spécifique pour export global
       'Alphanumeric code of the mapping',
       'All tables combined', //  Note indiquant l'export global
       '', '', '', ''
@@ -744,7 +744,7 @@ export default function CAProfileParser() {
     rows.push([
       'Setting',
       'name',
-      'Export All Tables', //  Nom descriptif
+      `Export All Tables (${exportFormat})` , //  Nom descriptif
       'Human readable name of the mapping',
       'Arbitrary text',
       '', '', '', ''
@@ -762,7 +762,7 @@ export default function CAProfileParser() {
     rows.push([
       'Setting',
       'exporter_format',
-      'XML',
+      exportFormat, 
       'Set exporter type',
       'XML, CSV or MARC',
       '', '', '', ''
@@ -908,7 +908,7 @@ export default function CAProfileParser() {
           {/* Résumé */}
           {parsedData && (
             <div className="space-y-6">
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-4 gap-4">
                 <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg p-6 text-white">
                   <div className="text-3xl font-bold mb-1">
                     {parsedData.summary.totalTables}
