@@ -11,9 +11,6 @@ Fonctionne avec le schéma d'export des configuration de CollectiveAccess dont l
     - groups
     - displays
     - searchForms.
- 
-Warning 11.11.25 : pas possible d'exporter toutes les tables en xml pour l'instant depuis collective access. 
-exports elements ne sont plus bons. 
 
 @todo : Ajouter les infos suivantes : 
 - donner la procedure entière pour exporter données de CA
